@@ -35,5 +35,20 @@ for line in s_lines:
         
 print("PART 1: Twos: " + str(twos) + " Threes: " + str(threes) + " CHKSUM: " + str(twos*threes))
         
+# PART TWO:
+
+def remove_char_in_lines(pos, lines):
+    return [l[:pos] + l[(pos+1):] for l in lines]
 
 
+for rem_pos in range(0, len(lines[0])):
+    print("rem_pos = " + str(rem_pos))
+    lines_without_c = remove_char_in_lines(rem_pos, lines)
+    for i in range(0, len(lines_without_c) - 1):
+        if lines_without_c[i] in lines_without_c[i+1:]:
+            print("PART 2: Found similar lines, index: " + str(i) + " equal chars: " + "".join(lines_without_c[i]))
+            exit()
+
+            
+
+        
