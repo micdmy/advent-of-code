@@ -10,8 +10,9 @@ def sum_drift(offset, drift):
 drift = read_input()
 if not drift :
     exit()
-    
-print("part 1: After all changes in frequencies, the result is = " + str(sum_drift(0, drift)))
+
+table_step = sum_drift(0, drift)
+print("part 1: After all changes in frequencies, the result is = " + str(table_step))
         
 # PART TWO:
 
@@ -29,3 +30,18 @@ print(str(integrate(0, a)))
 
 print(str(integrate(0,drift)))
 
+generated = set()
+integral = integrate(0, drift)
+offset = 0
+counter = 0
+while True:
+    table = [offset + i for i in integral]
+    for t in table:
+        if t not in generated:
+            generated.add(t)
+        else:
+            print("First frequency reached twice is " + str(t))
+            exit()
+    offset += table_step
+    counter += 1
+    print(str(offset) + " " + str(counter))
