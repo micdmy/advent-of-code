@@ -16,15 +16,21 @@ class Password():
     def met_criteria(self):
         lPass = [int(char) for char in str(self.nPass)]
         last_digit = -1
-        pair_present = False
+        num_adjacent = 1
+        adjacency_ok = False
         for digit in lPass:
             if digit < last_digit:
                 return False
             if digit == last_digit:
-                pair_present = True
+                num_adjacent += 1
             else:
-                last_digit = digit
-        return pair_present
+                if num_adjacent == 2:
+                    adjacency_ok = True
+                num_adjacent = 1
+            last_digit = digit
+        if num_adjacent == 2:
+            adjacency_ok = True
+        return adjacency_ok
 
 
 def count_possible_passwords(nBegin, nEnd):
