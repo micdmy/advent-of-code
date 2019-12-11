@@ -44,24 +44,26 @@ class Instruction():
     def set_args(self, par_modes, pc, program):
         if len(par_modes) != self.get_num_par():
             raise Exception
-        params = program[pc + 1 : pc + self.get_num_par() - 1]
+        params = program[pc + 1 : pc + 1 + self.get_num_par()]
         self._args = [Argument(par, par_mode) for par, par_mode in zip(params, par_modes)]
 
 
 class Add(Instruction):
     def __init__(self):
-        super().__init__(4, pc, program)
+        super().__init__(4)
     
     def execute(self):
-        self._args[2].set_val(self._args[0].get_val() + self_args[1].get_val())
+        self._args[2].set_val(self._args[0].get_val() + self._args[1].get_val())
+ 
+ 
 
 
 class Mul(Instruction):
     def __init__(self):
-        super().__init__(4, pc, program)
+        super().__init__(4)
     
     def execute(self):
-        self._args[2].set_val(self._args[0].get_val() * self_args[1].get_val())
+        self._args[2].set_val(self._args[0].get_val() * self._args[1].get_val())
 
 
 class Mov(Instruction):
@@ -96,10 +98,10 @@ class Argument():
         self._par_mode = par_mode
 
     def get_val(self):
-        self._par_mode.get_value(self._param)
+        return self._par_mode.get_value(self._param)
     
     def set_val(self, val):
-        self._par_mode.set_val(self._param, val)
+        self._par_mode.set_value(self._param, val)
           
 
 class ParameterModeFactory():
@@ -107,7 +109,7 @@ class ParameterModeFactory():
         self.program = program
 
     def get_par_mode(self, opcode_figure):
-        if opcode_figure == None or opcode_figure == 0:
+        if opcode_figure == 0:
             return PositionMode(self.program)
         elif opcode_figure == 1:
             return ImmediateMode(self.program)
@@ -156,13 +158,13 @@ class Computer():
         raw = self.program[self.pc]
         instruction = self.inst_factory.get_instruction(self.program, self.pc)        
         num = instruction.get_num_par()
-        par_codes = list(str(raw)[:-2])
+        par_codes = [int(i) for i in list(str(raw)[:-2])]
         par_codes.reverse()
         cur_len = len(par_codes)
         par_codes.extend([0] * (num - cur_len))
         par_modes = [self.par_mode_factory.get_par_mode(p_code) for p_code in par_codes]
         instruction.set_args(par_modes, self.pc, self.program)
-        return (instruction, num)
+        return (instruction, num + 1)
 
     def run(self):
         while True:
