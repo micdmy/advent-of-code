@@ -7,12 +7,16 @@ def read_input():
 program = read_input()
 orig_prog = program[:]
 
+
 ADD = 1
 MUL = 2
 MOV = 3
 OUT = 4
+JNZ = 5
+JZ = 6
+LT = 7
+EQ = 8
 END = 99
-
 
 class InstructionFactory():
     def __init__(self):
@@ -30,6 +34,14 @@ class InstructionFactory():
             return Out()
         elif inst_code == END:
             return End()
+        elif inst_code == JNZ:
+            return Jnz()
+        elif inst_code == JZ:
+            return Jz()
+        elif inst_code == LT:
+            return Lt()
+        elif inst_code == EQ:
+            return Eq()
         else:
             raise Exception()
 
@@ -46,6 +58,9 @@ class Instruction():
             raise Exception
         params = program[pc + 1 : pc + 1 + self.get_num_par()]
         self._args = [Argument(par, par_mode) for par, par_mode in zip(params, par_modes)]
+    
+    def get_new_pc_value(self, pc):
+        return pc + self._length
 
 
 class Add(Instruction):
@@ -54,8 +69,6 @@ class Add(Instruction):
     
     def execute(self):
         self._args[2].set_val(self._args[0].get_val() + self._args[1].get_val())
- 
- 
 
 
 class Mul(Instruction):
@@ -90,6 +103,53 @@ class End(Instruction):
     def execute(self):
        print("Program executed.") 
        raise Exception
+
+
+class Jnz(Instruction):
+    def __init__(self):
+        super().__init__(3)
+        self._new_pc = None
+    
+    def execute(self):
+        if self._args[0].get_val() != 0:
+            self._new_pc = self._args[1].get_val()
+    
+    def get_new_pc_value(self, pc):
+        if self._new_pc != None:
+            return self._new_pc
+        else:
+            return super().get_new_pc_value(pc)
+
+
+class Jz(Jnz):
+    def __init__(self):
+        super().__init__()
+    
+    def execute(self):
+        if self._args[0].get_val() == 0:
+            self._new_pc = self._args[1].get_val()
+        
+
+class Lt(Instruction):
+    def __init__(self):
+        super().__init__(4)
+
+    def execute(self):
+        if(self._args[0].get_val() < self._args[1].get_val()):
+            self._args[2].set_val(1)
+        else:
+            self._args[2].set_val(0)
+            
+    
+class Eq(Instruction):
+    def __init__(self):
+        super().__init__(4)
+
+    def execute(self):
+        if(self._args[0].get_val() == self._args[1].get_val()):
+            self._args[2].set_val(1)
+        else:
+            self._args[2].set_val(0)
 
 
 class Argument():
@@ -170,7 +230,8 @@ class Computer():
         while True:
             instruction, length = self.parse_opcode()
             instruction.execute()
-            self.pc += length
+            self.pc = instruction.get_new_pc_value(self.pc)
+            print("PC: %d"%self.pc)
 
 computer = Computer(program)
 computer.run()
