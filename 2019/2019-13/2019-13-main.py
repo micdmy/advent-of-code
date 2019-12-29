@@ -1,15 +1,21 @@
+import keyboard as kb
+import time
 from collections import defaultdict
 
 class Board():
     def __init__(self):
-        self.tiles = [[]]
+        self.tiles = [[""]]
 
     def set_tile(self,x, y, val):
+        y += 1
         y_ext = y - len(self.tiles) + 1
         self.tiles.extend([[]] * y_ext)
         x_ext = x - len(self.tiles[y]) + 1
         self.tiles[y].extend([" "] * x_ext)
         self.tiles[y][x] = val
+
+    def set_score(self, score):
+        self.tiles[0] = "SCORE: %d"%score
     
     def __str__(self):
         ret_buf = ""
@@ -34,7 +40,14 @@ class Game():
     
     @classmethod
     def set_tile(cls, x, y, _type):
-        cls.board.set_tile(x, y, cls.tile_chars[_type])
+        if x == -1 and y == 0:
+            cls.board.set_score(_type)
+        else:
+            if _type == 4:
+                Joystick.set_ball(x)
+            elif _type == 3:
+                Joystick.set_pad(x)
+            cls.board.set_tile(x, y, cls.tile_chars[_type])
 
     @classmethod
     def draw(cls):
@@ -58,11 +71,35 @@ class OutputObserver():
             cls.idx += 1
         else:
             cls.idx = 0
-            print("current order: " + str(cls.current_order))
             Game.set_tile(*cls.current_order)
             Game.draw()
 
 
+class Joystick():
+    ball_x = None
+    pad_x = None
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def get_position(cls):
+        if cls.ball_x == None or cls.pad_x == None:
+            return 0
+        if cls.ball_x > cls.pad_x:
+            return 1
+        elif cls.ball_x < cls.pad_x:
+            return -1
+        else:
+            return 0
+
+    @classmethod
+    def set_ball(cls, ball_x):
+        cls.ball_x = ball_x
+
+    @classmethod
+    def set_pad(cls, pad_x):
+        cls.pad_x = pad_x
 
 ## INTCODE COMPUTER BEGIN
 def read_input():
@@ -171,7 +208,8 @@ class Mov(Instruction):
         super().__init__(2)
     
     def execute(self):
-        value = int(input("Enter a number:"))
+        # value = int(input("Enter a number:"))
+        value = Joystick.get_position()
         self._args[0].set_val(value)
 
 
@@ -341,7 +379,8 @@ class Computer():
             self.pc = instruction.get_new_pc_value(self.pc)
             # print("PC: %d"%self.pc)
 
-
+# Hack the number of quearter put in the machine:
+program[0] = 2
 
 computer = Computer(program)
 computer.run()
