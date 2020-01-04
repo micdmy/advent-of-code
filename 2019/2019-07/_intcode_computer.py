@@ -14,6 +14,8 @@ EQ = 8
 ARB = 9
 END = 99
 
+RET_CODE_HALT = 1
+RET_CODE_TERMINATE = 2
 
 class RelativeBase():
     def __init__(self):
@@ -109,6 +111,7 @@ class Out(Instruction):
     
     def execute(self):
         self._on_out(self._args[0].get_val())
+        return RET_CODE_HALT
         
         
 class End(Instruction):
@@ -117,7 +120,7 @@ class End(Instruction):
     
     def execute(self):
         print("Program executed.") 
-        return True
+        return RET_CODE_TERMINATE
 
 
 class Jnz(Instruction):
@@ -249,6 +252,7 @@ class Computer():
         self.relative_base = RelativeBase()
         self.on_in = on_in
         self.on_out = on_out
+        self.terminated = False
         
     def operand(self, operand_num):
         return self.program[self.pc + operand_num]
@@ -266,11 +270,17 @@ class Computer():
         return (instruction, num + 1)
 
     def run(self):
+        if self.terminated:
+            return True
         while True:
             instruction, length = self.parse_opcode()
-            if instruction.execute():
-                break
+            ret_code = instruction.execute()
             self.pc = instruction.get_new_pc_value(self.pc)
+            if ret_code == RET_CODE_HALT:
+                return False
+            elif ret_code == RET_CODE_TERMINATE:
+                self.terminated = True
+                return False
 
     @classmethod
     def parse_intcode_program(cls, file_name):
