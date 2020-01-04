@@ -21,3 +21,25 @@ ones_cnt = max_zeros_img.count(1)
 twos_cnt = max_zeros_img.count(2)
 print("First solution, 2*1 = %d"%(ones_cnt * twos_cnt))
 
+BLACK = 0
+WHITE = 1
+TRANSPARENT = 2
+
+img_len = H * W
+result_img = []
+for pix_idx in range(0, img_len):
+    print("pix_idx:%d"%pix_idx)
+    value = TRANSPARENT
+    offset = 0
+    while pix_idx + offset < len(pixels) and value == TRANSPARENT:
+        pixel = pixels[pix_idx + offset]
+        offset += img_len
+        if value == TRANSPARENT:
+            value = pixel
+    result_img.append(value)
+    
+piece_of_art = [' ' if pix == BLACK else '#' for pix in result_img]
+
+for row in range(0, H):
+    line = piece_of_art[W * row : W * (row+1)]
+    print("".join(line))
